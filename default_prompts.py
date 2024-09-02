@@ -1,5 +1,15 @@
 from lang_config import LANG, ALL_LANGS
 from cmdline import args
+
+class RE:
+    def __init__(self, str):
+        self.str = str
+    def get_string(self):
+        return self.str
+    def __hash__(self):
+        return hash(self.str)
+    def __eq__(self, other):
+        return self.str == other.str
    
 if LANG == "Dafny":
     proof_marker = "ensures"
@@ -556,7 +566,7 @@ problem_opt0 = (
 )
 
 problem_opt0_python = (
-    f"""### Spec: In {LANG}, write an ADT for arithmetic expressions comprising constants, variables and binary additions. Then write an evaluator taking an expression and an environment (a function that takes a variable name and returns a number) and returning the number resulting from evaluation. Then write an optimizer taking an expression and returning an expression with all additions by 0 removed{EXTRA_CONSTANT_FOLDING}. Then prove that the optimizer preserves the semantics as defined by the evaluation function.
+    f"""### Spec: In {LANG}, write an ADT for arithmetic expressions comprising constants (`Const`), variables (`Var`) and binary additions (`BinAdd`). Then write an evaluator taking an expression and an environment (a function that takes a variable name and returns a number) and returning the number resulting from evaluation. Then write an optimizer taking an expression and returning an expression with all additions by 0 removed{EXTRA_CONSTANT_FOLDING}.
 {hint_match_dafny}### Hint: In the optimizer, recursively optimize the sub-expressions.
 {'''### Hint: For the proof, just do a simple pattern match (match not if) and call the lemma recursively without adding asserts.
 ''' if LANG=='Dafny' else ''
@@ -573,7 +583,7 @@ problem_opt0_python = (
     ["Python"],
     None,
     {
-        "\ndef optimize": "test(optimize(Const(5)).evaluate() == 5)"
+        RE("class Const:.*def evaluate.*class"): "test(Const(5).evaluate() == 5)"
     }
 )
 
@@ -1837,6 +1847,7 @@ problems_dict = {
     "problem_opt0_proof_coq" : problem_opt0_proof_coq,
     "problem_opt0_coq_proof_hints" : problem_opt0_coq_proof_hints,
     "problem_opt0" : problem_opt0,
+    "problem_opt0_python" : problem_opt0_python,
     "problem_opt0_opt_dafny" : problem_opt0_opt_dafny,
     "problem_opt0_opt_dafny_sanity_check" : problem_opt0_opt_dafny_sanity_check,
     "problem_opt0_dafny_sanity_check" : problem_opt0_dafny_sanity_check,

@@ -2,6 +2,8 @@ from execute import execute, livecode
 import requests
 from typing import Optional
 from collections.abc import Callable
+from default_prompts import RE
+import re
 
 def create_comment(msg: str) -> str:
     return f"'''\n{msg}\n'''"
@@ -83,16 +85,30 @@ def finalReport():
 		print('TRUE')
 		sys.exit(0)
 """
+def check_whether_to_run_unittest(key, value, file):
+    if isinstance(key, RE):
+        return not not re.search(key.get_string(), file)
+    else:
+        return file.find(key) != -1
 def run_unittests(v: str, unittest=None):
     file = v
     file += test_fwk
     foundAll = True
     for key, value in unittest.items():
-        if v.find(key) != -1:
+        if check_whether_to_run_unittest(key, value, v):
             file += value + "\n"
         else:
             file += "runningAllTests = False\n"
     file += "\nfinalReport()\n"
     print(file)
-    return check_code(file)["status"]
-
+    check = check_code(file)
+    # There are three results to running unit tests:
+    # They either fail (we lower the score),
+    # succeed (the code is ready),
+    # or are inconclusive (not all tests could be run, so we keep generating).
+    if check["status"] != 0:
+        return 1
+    if "INCONCLUSIVE" not in check["out"]:
+        return 0
+    else:
+        return 2

@@ -101,13 +101,16 @@ def score_unittest(v: str, score: float, unittest: str) -> Optional[float]:
     print("Preliminary SCORE")
     print(score)
     tscore = run_unittests(v, unittest)
-    if tscore != 0:
-        print("Unittest tscore ", tscore, "FAILED. Lowering score.")
-        print("NEW SCORE")
-        print("-1.0")
-        return -1.0
-    else:
-        print("Unittest succeeded, tscore = ", tscore, "and score remains", score)
+    if tscore == 1: # if unittest fails
+         print("Unittest tscore ", tscore, "FAILED. Lowering score.")
+         print("NEW SCORE")
+         print("-1")
+         return -1
+    if tscore == 0: # if unittest succeeds
+         print("Unittest succeeded, tscore = ", tscore, "and score remains", score)
+         return score
+    else: # if unittest is inconclusive
+        print("Unittest not fully ran (but so far, correct), tscore = ", tscore, "and score remains", score)
         return score
 
 def amend_score(v: str, score: float, unittest: Optional[str] = None) -> Optional[float]:
