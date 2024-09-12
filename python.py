@@ -48,7 +48,7 @@ def last_line_indented(v):
     return line.startswith('\t') or line.startswith(' ')
 
 def calculate_code_score_with_err(v: str, code_maybe_incomplete: Callable[[int],bool]) -> (Optional[float], Optional[str]):
-    if v == '' or last_line_indented(v):
+    if v == '' or (last_line_indented(v) and not v.endswith("\n")):
         return None, None
     v = v.strip()
     r = check_code(v)
@@ -71,11 +71,17 @@ def check_code(v: str) -> dict:
 
 test_fwk = """
 import sys
+import random
 runningAllTests = True
 def test(x):
 	if not x:
 		print('FALSE')
 		sys.exit(1)
+def proptestint(x):
+        for count in range(1, 25):
+                if not x(random.randint(0, 10000)):
+                        print('FALSE')
+                        sys.exit(1)
 def finalReport():
 	global runningAllTests
 	if not runningAllTests:
@@ -87,7 +93,7 @@ def finalReport():
 """
 def check_whether_to_run_unittest(key, value, file):
     if isinstance(key, RE):
-        return not not re.search(key.get_string(), file)
+        return not not re.search(key.get_string(), file, re.MULTILINE | re.DOTALL)
     else:
         return file.find(key) != -1
 def run_unittests(v: str, unittest=None):
@@ -98,6 +104,7 @@ def run_unittests(v: str, unittest=None):
         if check_whether_to_run_unittest(key, value, v):
             file += value + "\n"
         else:
+            file += "# not injecting test, because regex " + key.get_string() + " did not match\n"
             file += "runningAllTests = False\n"
     file += "\nfinalReport()\n"
     print(file)

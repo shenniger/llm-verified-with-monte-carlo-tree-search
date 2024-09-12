@@ -7,7 +7,7 @@ from lang import can_be_solution
 
 from lang import score_func as uncached_score_func
 
-from common_interactive import diffprompt
+from common_interactive import diffprompt, onelineonly
 
 from prompts import prompt, min_lines, expansion_count, check_func, check_string, test_dict
 from lang import run_tests
@@ -66,6 +66,7 @@ def generate_complete(text, montecarlo, current_completion_depth=1):
         return None, current_completion_depth
     prev = text
     texts = timed_generate(text, 1)
+    texts = onelineonly(prev, texts)
     text = texts[0]
     score = score_func(text)
     print(diffprompt(prev, texts))

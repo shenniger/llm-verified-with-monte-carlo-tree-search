@@ -3,7 +3,7 @@ from lang import score_func as uncached_score_func
 
 from common_cache import create_cached_func
 score_func, cache_stats, reset_cache = create_cached_func(uncached_score_func)
-from common_interactive import diffprompt
+from common_interactive import diffprompt, onelineonly
 
 from prompts import prompt, expansion_count, min_lines, check_func
 from common import limit_depth, max_completion_depth
@@ -22,6 +22,7 @@ def generate_complete(text, current_completion_depth=1):
         return None
     prev = text
     texts = llm.generate(text, 1)
+    texts = onelineonly(prev, texts)
     text = texts[0]
     score = score_func(text)
     print(diffprompt(prev, texts))
@@ -49,22 +50,19 @@ class Node:
         print("[", self.depth, "] Generating more")
         new_text = generate_complete(self.base)
         if new_text is None:
-            self.alive = False
             return False
         self.branches.append(Node(new_text, self.depth + 1))
         return True
 
     def steps(self):
-        if not self.alive:
-            # TODO: Not sure yet if this is correct. Might be a bit harsh
-            # to kill the node including its children after one bad
-            # generation attempt.
-            return
         for b in self.branches:
             print("[", self.depth, "] Branch")
             b.steps()
-        if self.generate():
-            self.branches[len(self.branches)-1].steps()
+        if self.alive:
+            if self.generate():
+                self.branches[len(self.branches)-1].steps()
+            else:
+                self.alive = False
 
 def main(prompt = prompt):
     root = Node(prompt, 1)

@@ -58,7 +58,7 @@ from common_lang import make_filter_code, findall_code
 filter_code = make_filter_code(re_code_lang)
 
 def code_of_msg(msg: str) -> str:
-    return filter_code(msg + "```").strip()
+    return filter_code(msg + "```").lstrip()
 
 def make_code_is_incomplete(msg, v):
     return
@@ -144,7 +144,7 @@ def code_is_complete(x):
     return False # code_maybe_incomplete is False
 
 def calculate_score_with_err_whole(msg: str) -> (Optional[float], Optional[str], Optional[str]):
-    vs = [s.strip() for s in filter_code_whole(msg + "```")]
+    vs = [s.lstrip() for s in filter_code_whole(msg + "```")]
     for v in vs:
         score, score_err = calculate_code_score_with_err(v, code_is_complete)
         if score is not None and score > 0.5:

@@ -566,24 +566,18 @@ problem_opt0 = (
 )
 
 problem_opt0_python = (
-    f"""### Spec: In {LANG}, write an ADT for arithmetic expressions comprising constants (`Const`), variables (`Var`) and binary additions (`BinAdd`). Then write an evaluator taking an expression and an environment (a function that takes a variable name and returns a number) and returning the number resulting from evaluation. Then write an optimizer taking an expression and returning an expression with all additions by 0 removed{EXTRA_CONSTANT_FOLDING}.
-{hint_match_dafny}### Hint: In the optimizer, recursively optimize the sub-expressions.
-{'''### Hint: For the proof, just do a simple pattern match (match not if) and call the lemma recursively without adding asserts.
-''' if LANG=='Dafny' else ''
-}{'''### Hint: You can import the `string` datatype with the line `Require Import Coq.Strings.String.`.
-### Hint: Use Fixpoint instead of Definition for recursive functions.
-### Hint: With tactics like `induction` and `destruct`, _avoid_ naming with `as` and let Coq pick the names for you. For example, use `induction e.` but _not_ `induction e as [...]`.
-''' + problem_opt0_coq_proof_hints if LANG=='Coq' else ''
-}""",
+    f"""### Spec: In {LANG}, write an ADT for arithmetic expressions comprising constants (`Const`), variables (`Var`) and binary additions (`BinAdd`). The ADT has evaluator member functions `evaluate` taking an expression and an environment (a function that takes a variable name and returns a number) and returning the number resulting from evaluation. Finally, write an optimizer `optimize` taking an expression and returning an expression with all additions by 0 removed{EXTRA_CONSTANT_FOLDING}.""",
     1000,
     None,
-    22,
+    12,
     40,
     CHECK_PROOF, CHECK_CHEAT,
     ["Python"],
     None,
     {
-        RE("class Const:.*def evaluate.*class"): "test(Const(5).evaluate() == 5)"
+        RE("class Const.*def evaluate"): "proptestint(lambda x: (Const(x).evaluate(lambda a: a) == x))",
+        RE("class Var.*def evaluate"): "proptestint(lambda x: (Var('test').evaluate(lambda a: (x if a == 'test' else 1)) == x))",
+        RE("class BinAdd.*def evaluate"): "proptestint(lambda x: (BinAdd(Var('test'), Const(x)).evaluate(lambda a: (5 if a == 'test' else 1)) == x + 5))"
     }
 )
 

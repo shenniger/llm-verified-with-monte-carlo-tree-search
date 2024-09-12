@@ -10,6 +10,17 @@ def diffprompt_default(prompt, results):
     n = len(strip_instructions(prompt))
     return [strip_instructions(r)[n:] for r in results]
 
+def onelineonly_perline(r, n):
+    try:
+        idx = r.index("\n", n) + 1
+        return r[:idx]
+    except ValueError:
+        return r
+
+def onelineonly(prompt, results):
+    n = len(strip_instructions(prompt))
+    return [onelineonly_perline(r, n) for r in results]
+
 def find_assistant(prompt, initial_prompt=""):
     tag = "<|eot_id|>"
     try:
