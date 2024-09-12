@@ -1,3 +1,4 @@
+from lang_config import LANG
 from scoring import (
     run_tests,
     score_func,
